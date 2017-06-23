@@ -69,26 +69,10 @@ RUN apt-get update \
 
 RUN wget -q -O flyway.tar.gz https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/4.0.3/flyway-commandline-4.0.3-linux-x64.tar.gz && tar xvfz ./flyway.tar.gz -C ./ && rm -rf flyway.tar.gz
 
-
-# RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
-
-# RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-#   sudo apt-key add - sudo apt-get update
-
-# RUN apt-get update \
-#   && apt-get install -y postgresql postgresql-contrib \
-#   && apt-get install sudo \
-#   && apt-get clean \
-#   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-
-
 # make the sample config easier to munge (and "correct by default")
 RUN mv -v /usr/share/postgresql/$PG_MAJOR/postgresql.conf.sample /usr/share/postgresql/ \
 	&& ln -sv ../postgresql.conf.sample /usr/share/postgresql/$PG_MAJOR/ \
-	&& sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample 
-#   && mkdir -p /var/lib/postgresql/data/ && chown -R postgres:postgres /var/lib/postgresql && chmod -R 0700 /var/lib/postgresql \
-#  && cp /usr/share/postgresql/postgresql.conf.sample /var/lib/postgresql/data/postgresql.conf
+	&& sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample
 
 RUN ls -l /var/lib/postgresql
 
@@ -97,39 +81,7 @@ RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgres
 ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH
 ENV PGDATA /var/lib/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
-# VOLUME /var/lib/postgresql/data
-
-
-
-
-
-# RUN apt-get install postgresql -y
-# RUN apt-get install postgres-contrib -y
-
-# 
-# COPY start.sh .
-# CMD ["/etc/init.d/postgresql start"]
-
-# # ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH
-# CMD ["su postgres sh -c 'createuser postgres & createdb postgres'"]
-# CMD ["sudo -u postgres psql -c 'ALTER ROLE postgres WITH password \'postgres\''"]
-# RUN su postgres sh -c 'createuser postgres & createdb postgres'
-# RUN su postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-
-# RUN groupadd --gid 3434 circleci \
-#   && useradd --uid 3434 --gid circleci --shell /bin/bash --create-home circleci \
-#   && echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci \
-#   && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
-
-# BEGIN IMAGE CUSTOMIZATIONS
-# END IMAGE CUSTOMIZATIONS
-
-# flyway-4.0.3/flyway -url=jdbc:postgresql://localhost:5432/postgres -locations=filesystem:./src/migration/sql -schemas=cms -user=postgres -password=postgres migrate
-
 
 USER postgres
-RUN initdb --user=postgres 
+RUN initdb --user=postgres
 CMD ["postgres"]
-
-
-
